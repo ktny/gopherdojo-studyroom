@@ -58,11 +58,11 @@ func DirWalk(dir string) ([]string, error) {
 func CanConvert(from, path string) bool {
 	switch from {
 	case JPG, JPEG:
-		return strings.HasSuffix(path, toExt(JPG)) || strings.HasSuffix(path, toExt(JPEG))
+		return strings.ToLower(filepath.Ext(path)) == toExt(JPG) || strings.ToLower(filepath.Ext(path)) == toExt(JPEG)
 	case PNG:
-		return strings.HasSuffix(path, toExt(PNG))
+		return strings.ToLower(filepath.Ext(path)) == toExt(PNG)
 	case GIF:
-		return strings.HasSuffix(path, toExt(GIF))
+		return strings.ToLower(filepath.Ext(path)) == toExt(GIF)
 	default:
 		return false
 	}
