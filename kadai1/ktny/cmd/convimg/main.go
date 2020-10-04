@@ -55,7 +55,7 @@ func main() {
 	// 指定された拡張子の画像ファイルを変換する
 	for _, filepath := range filepaths {
 		if converter.CanConvert(from, filepath) {
-			fmt.Printf("[Info]convert %s\n", filepath)
+			fmt.Printf("[Info]convert %s to %s\n", filepath, to)
 			if err := converter.ConvertImage(filepath, from, to); err != nil {
 				fmt.Printf("[Error]%s", err)
 			}
