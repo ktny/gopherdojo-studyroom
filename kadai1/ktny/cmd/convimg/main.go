@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"kadai1/ktny/converter"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -27,7 +28,7 @@ func main() {
 		fmt.Println("[Error]Directory is not defined.")
 		os.Exit(1)
 	}
-	targetDir = strings.TrimRight(targetDir, "/")
+	targetDir = filepath.Join(strings.Split(targetDir, "/")...)
 
 	// 指定された変換前後の拡張子が同じ場合は終了する
 	if from == to {
