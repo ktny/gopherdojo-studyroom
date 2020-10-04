@@ -75,15 +75,32 @@ func toExt(s string) string {
 
 // 画像を指定の拡張子で変換する
 func ConvertImage(path, from, to string) error {
-	var img img
-	var err error
-	var f *os.File
 	buf := new(bytes.Buffer)
 	newFilePath := strings.Replace(path, from, to, 1)
 
-	f, err = os.Open(path)
+	img, err := decodeImg(path, from)
 	if err != nil {
 		return err
+	}
+
+	if err := encodeImg(buf, &img, to); err != nil {
+		return err
+	}
+
+	if err := updateImg(buf, path, newFilePath); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 画像をデコードする
+func decodeImg(path, from string) (img, error) {
+	var img img
+
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
 	}
 	defer f.Close()
 
@@ -91,37 +108,46 @@ func ConvertImage(path, from, to string) error {
 	case JPG, JPEG:
 		img, err = jpeg.Decode(f)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	case PNG:
 		img, err = png.Decode(f)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	case GIF:
 		img, err = gif.Decode(f)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
+	return img, err
+}
+
+// 画像をtoでエンコードする
+func encodeImg(buf *bytes.Buffer, img *img, to string) error {
 	switch to {
 	case JPG, JPEG:
 		options := &jpeg.Options{Quality: 100}
-		if err = jpeg.Encode(buf, img, options); err != nil {
+		if err := jpeg.Encode(buf, *img, options); err != nil {
 			return err
 		}
 	case PNG:
-		if err := png.Encode(buf, img); err != nil {
+		if err := png.Encode(buf, *img); err != nil {
 			return err
 		}
 	case GIF:
 		options := &gif.Options{}
-		if err := gif.Encode(buf, img, options); err != nil {
+		if err := gif.Encode(buf, *img, options); err != nil {
 			return err
 		}
 	}
+	return nil
+}
 
+// 画像を削除して、エンコードした画像で再作成する
+func updateImg(buf *bytes.Buffer, path, newFilePath string) error {
 	if err := os.Remove(path); err != nil {
 		return err
 	}
@@ -130,9 +156,16 @@ func ConvertImage(path, from, to string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	var rerr error
+	defer func() {
+		if err := file.Close(); err != nil {
+			rerr = err
+		}
+	}()
+	if rerr != nil {
+		return err
+	}
 
 	file.Write(buf.Bytes())
-
 	return nil
 }
