@@ -25,6 +25,7 @@ func main() {
 	m := 5
 	filename := "test.txt" // ABC
 	f, err := os.Open(filename)
+	defer f.Close()
 	p := make([]byte, m)
     n, err := f.Read(p)
 	if m < n {
@@ -84,5 +85,7 @@ func main() {
 このようにgoのio.Reader, io.Writerインターフェースは標準パッケージでも、汎用的な入出力を行う実装としてよく使用されている。
 
 ### io.Readerとio.Writerがあることでどういう利点があるのか
+- これらのインターフェースが統一された実装であれば、ファイル、メモリ、ネットワークなど入力元・出力先についても切り替えが容易になる
+- また、インターフェースのシグネチャさえわかればその実装内容にまで踏み込んで知る必要が少なくなる
 
 
